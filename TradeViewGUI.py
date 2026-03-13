@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (
 )
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.service import Service
 from webdriver_manager.firefox import GeckoDriverManager
 
 
@@ -96,13 +97,12 @@ class Main(QMainWindow):
         try:
             options = Options()
             if self.FirefoxcheckBox.isChecked():
-                options.headless = True
-            elif not self.FirefoxcheckBox.isChecked():
-                options.headless = False
-            profile = webdriver.FirefoxProfile(self.firefoxProfileString.text())
-            driver = webdriver.Firefox(
-                profile, options=options, executable_path=GeckoDriverManager().install()
-            )
+                options.add_argument("--headless")
+            profile_path = self.firefoxProfileString.text()
+            if profile_path:
+                options.profile = webdriver.FirefoxProfile(profile_path)
+            service = Service(GeckoDriverManager().install())
+            driver = webdriver.Firefox(service=service, options=options)
             return driver
         except Exception:
             pass
