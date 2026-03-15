@@ -4,7 +4,7 @@
 
     "timeframe": "1h",
     "session": "extended",
-    "strategy": "macd_rsi",
+    "strategy": "adx_stochastic",
     "initial_capital": 100000,
 
     "data_dir": "data",

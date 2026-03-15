@@ -150,6 +150,62 @@ class OptimizationBundle:
         }
 
 
+@dataclass
+class MultiPairCandidate:
+    """A single SL/TP candidate evaluated across multiple pairs."""
+    sl_pct: float
+    tp_pct: float
+    aggregate_net_profit_pct: float
+    aggregate_max_drawdown_pct: float
+    aggregate_objective: float
+    per_pair_metrics: list[BacktestMetrics]
+    rank: int | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "sl_pct": round(self.sl_pct, 4),
+            "tp_pct": round(self.tp_pct, 4),
+            "aggregate_net_profit_pct": round(self.aggregate_net_profit_pct, 2),
+            "aggregate_max_drawdown_pct": round(self.aggregate_max_drawdown_pct, 2),
+            "aggregate_objective": round(self.aggregate_objective, 4),
+            "rank": self.rank,
+            "per_pair_metrics": [m.to_dict() for m in self.per_pair_metrics],
+        }
+
+
+@dataclass
+class MultiPairOptimizationBundle:
+    """Optimization results for multi-pair simultaneous optimization."""
+    request: OptimizationRequest
+    pairs: list[tuple[str, str]]  # (symbol, exchange) tuples
+    results: list[MultiPairCandidate]
+    coarse_results: list[MultiPairCandidate]
+    output_path: Path
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "request": {
+                "candle_request": {
+                    "timeframe": self.request.candle_request.timeframe,
+                    "session": self.request.candle_request.session,
+                },
+                "pairs": [f"{ex}:{sym}" for sym, ex in self.pairs],
+                "mode": self.request.mode,
+                "objective": self.request.objective,
+                "sl_min": self.request.sl_min,
+                "sl_max": self.request.sl_max,
+                "tp_min": self.request.tp_min,
+                "tp_max": self.request.tp_max,
+                "top_n": self.request.top_n,
+                "initial_equity": self.request.initial_equity,
+                "search_method": self.request.search_method,
+                "n_trials": self.request.n_trials,
+            },
+            "results": [c.to_dict() for c in self.results],
+            "coarse_results": [c.to_dict() for c in self.coarse_results],
+        }
+
+
 # ---------------------------------------------------------------------------
 # Serialization helpers
 # ---------------------------------------------------------------------------
